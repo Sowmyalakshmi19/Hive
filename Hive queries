@@ -1,0 +1,98 @@
+1)find the total number of customers  for each profession.
+ans:SELECT  Profession,COUNT(*) FROM Customer GROUP BY Profession;
+SELECT  Profession,COUNT(*)as headcount FROM Customer GROUP BY Profession order by headcount desc;
+
+2) find the total number of customers who do have any profession;
+Ans:
+select  count(profession) as total count from customer;
+ 
+3)Find out total Ten buyers from the sales data along with their personal details.
+ans:select a.custno, b.firstname,b.lastname, b.age, b.profession, sum(a.amount) as amt from txnrecords a, customer b where a.custno=b.custno group by a.custno, b.firstname, b.lastname, b.age, b.profession order by amt desc limit 10;
+ 
+4)find out total sales of each type with their respective percentage.
+ans:
+create table totalsales (total bigint)
+row format delimited                                                                                  
+fields terminated by ',';   
+
+insert overwrite table totalsales                                                                           
+select sum(amount) from txnrecords;
+
+select a.spendby, round(sum(a.amount),2) as typesales, round((sum(a.amount)/total*100),2) as salespercent from txnrecords a, totalsales b group by a.spendby, b.total ;
+
+B) 1)find total variance for each stock.
+ANS: select stock_symbol, max((stock_price_high-stock_price_low)/stock_price_low *100) as variance from nyse1 group by stock_symbol order by variance desc;
+2)find total volume for each stock.
+ANS:select sum(stock_volume) from nyse1 group by stock_volume;
+
+c)
+1) Total net profit
+ANS:select sum(profit) from margin;16163257
+2)find the percentage for those product who are having more than 10%
+ANS:create table grossprofit(total bigint)
+     row format delimited
+     fields terminated by ',';
+insert overwrite table grossprofit                                                                           
+select sum(profit) from margin where profit>0;
+
+select sum(a.profit), sum(a.profit)/total*100 from margin a,grossprofit b where margin_per>10 group by b.total;
+14899667	89.56923688430594
+3) find the total volume of business(qty)  for those product whose margin more than 10%
+ANS:select sum(qty) from margin where margin_per>10;856765
+4)Find the gross Profit
+ANS:select sum(profit) from margin where profit>0;16634804
+5)Find the gross loss
+ans: select sum(profit) from margin where profit<0;-471547 (gross loss)
+6)find(gross loss/gross profit*100) % should be as less as possible.
+ANS:create table grossloss(grossloss bigint)
+     row format delimited
+     fields terminated by ',';
+insert overwrite table grossloss                                                                           
+select sum(profit) from margin where profit<0;
+
+select (a.grossloss/b.total*100) from grossloss a, grossprofit b;
+******************************************************
+
+olympic:
+--------
+create table olympic (athelete STRING,age INT,country STRING,year STRING,closing STRING,sport STRING,gold INT,silver INT,bronze INT,total INT) row format delimited fields terminated by '\t' stored as textfile;
+
+hive>LOAD DATA LOCAL INPATH '/home/hduser/olympic_data.csv' OVERWRITE INTO TABLE olympic;
+
+1)1. Using the dataset list the total number of medals won by each country in swimming.
+ANS:select country,sport,sum(total) as medals from olympic where sport='Swimming' group by country,sport order by medals desc;
+
+2)Display real life number of medals India won year wise.
+ANS:select country,year,sum(total) from olympic where country='India' group by country,year;
+
+3)Find the total number of medals each country won display the name along with total medals.
+ANS:select athelete,country,sport,sum(total) as medals from olympic group by country,sport,athelete order by medals desc;
+
+4) Find the real life number of gold medals each country won.
+ANS:select country,sum(gold) as gold from olympic group by country;
+
+5) Which country got medals for Shooting, year wise classification?
+ANS:select country, year from olympic where sport='Shooting' group by year,country,sport;
+
+petrol:
+-------
+create table petrol1 (distributer_id STRING,distributer_name STRING,amt_IN STRING,amt_OUT STRING,vol_IN INT,vol_OUT INT,year INT) row format delimited fields terminated by ',' stored as textfile;
+
+insert overwrite table petrol1 select distributer_id,distributer_name,regexp_replace(amt_IN,"\\$",""),regexp_replace(amt_OUT,"\\$",""),vol_IN,vol_OUT,year from petrol;
+
+1)In real life what is the total amount of petrol in volume sold by every distributor?
+ANS:select distributer_id,distributer_name,sum(vol_out) as total from petrol group by distributer_id,distributer_name;
+
+2)Which are the top 10 distributors ID’s for selling petrol and also display the amount of petrol sold in volume by them individually?
+ANS:select distributer_id,sum(vol_out) as total from petrol group by distributer_id order by total desc limit 10;
+
+3)Find real life 10 distributor name who sold petrol in the least amount.
+ANS:select distributer_name,sum(vol_out) as total from petrol group by distributer_name order by total;
+
+4)The constraint to this query is the difference between volumeIN and volumeOuT is illegal in real life if greater than 500. As we see all distributors are receiving patrols on every next cycle.
+List all distributors who have this difference, along with the year and the difference which they have in that year.
+Hint: (vol_IN-vol_OUT)>500
+ANS:select distributer_id,distributer_name,year,(vol_in-vol_out) from petrol where (vol_in-vol_out)>500 group by distributer_id,(vol_in-vol_out),distributer_name,year order by year desc ;
+
+***********************************************
+
